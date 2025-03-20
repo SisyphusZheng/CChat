@@ -7,8 +7,16 @@ import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
 
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuthStore } from './store/useAuthStore';
+import { useEffect } from 'react';
 
 const App = () => {
+  const { authUser, checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
   return (
     <div>
       <Navbar />
