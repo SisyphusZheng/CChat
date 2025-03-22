@@ -10,6 +10,9 @@ import { connectDB } from "./lib/db.js";
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
 import { app, server } from "./lib/socket.js";
+import httpProxy from 'http-proxy';
+
+const { createProxyServer } = httpProxy;
 
 dotenv.config();
 
@@ -35,6 +38,14 @@ if (process.env.NODE_ENV === "production") {
         res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
     });
 }
+
+const proxy = httpProxy.createProxyServer();
+
+// 处理所有请求
+app.all('*', (req, res) => {
+    // 将请求转发到 5001 端口
+    proxy.web(req, res, { target: 'http://localhost:5001' });
+});
 
 server.listen(PORT, () => {
     console.log("server is running on PORT:" + PORT);
