@@ -22,7 +22,7 @@ let sslOptions;
 try {
   sslOptions = {
     key: fs.readFileSync('/etc/ssl/cchat.chat/cchat.chat.key'),
-    cert: fs.readFileSync('/etc/ssl/cchat.chat/fullchain.crt')
+    cert: fs.readFileSync('/etc/ssl/cchat.chat/fullchain.crt'),
   };
 } catch (error) {
   console.error('SSL 证书加载失败:', error.message);
@@ -71,6 +71,7 @@ app.all('*', (req, res) => {
 });
 
 const httpsServer = https.createServer(sslOptions, app);
+
 const httpServer = http.createServer((req, res) => {
   res.writeHead(301, {
     "Location": `https://${req.headers.host}${req.url}`
@@ -91,4 +92,5 @@ httpServer.listen(80, () => {
   console.log("HTTP redirect server running on port 80");
 });
 
+// 绑定 Socket.IO 到 HTTPS 服务器
 server.listen(httpsServer);
