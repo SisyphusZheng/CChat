@@ -59,18 +59,12 @@ export const githubCallback = (req, res, next) => {
         }
         if (!user) {
             console.log("No user found:", info);
-            const redirectUrl_Login = process.env.NODE_ENV === "development" ?
-                "http://localhost:5173/login" : "https://cchat.chat/login";
-            return res.redirect(redirectUrl_Login);
+            return res.redirect("/login");
         }
         try {
             console.log("GitHub callback received, user:", user);
             generateToken(user._id, res);
-            const redirectUrl = process.env.NODE_ENV === "development"
-                ? "http://localhost:5173"
-                : "https://cchat.chat";
-            console.log("Redirecting to:", redirectUrl);
-            res.redirect(redirectUrl);
+            res.redirect(process.env.GITHUB_CALLBACK_URL);
         } catch (error) {
             console.log("Error in github callback:", error.message);
             res.status(500).json({ message: "Internal Server Error" });
