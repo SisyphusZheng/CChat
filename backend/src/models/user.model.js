@@ -2,19 +2,19 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
     {
+        githubId: {
+            type: String,
+            unique: true,
+            sparse: true // 允许 null 值但保持唯一性
+        },
         email: {
             type: String,
-            required: true,
             unique: true,
+            sparse: true // 允许 null 值但保持唯一性
         },
         fullName: {
             type: String,
             required: true,
-        },
-        password: {
-            type: String,
-            required: true,
-            minlength: 6,
         },
         profilePic: {
             type: String,

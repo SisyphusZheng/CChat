@@ -1,118 +1,156 @@
-import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
-import bcrypt from "bcryptjs";
-import cloudinary from "../lib/cloudinary.js";
+import passport from "passport";
+import { Strategy as GitHubStrategy } from "passport-github2";
+import { generateToken } from "../lib/utils.js";
+import dotenv from "dotenv";
 
-export const signup = async (req, res) => {
-    const { fullName, email, password } = req.body;
+dotenv.config();
+// GitHub Strategy 配置
+passport.use(
+    new GitHubStrategy(
+        {
+            clientID: process.env.GITHUB_CLIENT_ID,
+            clientSecret: process.env.GITHUB_CLIENT_SECRET,
+            callbackURL: "http://localhost:5001/api/auth/github/callback",
+        },
+        async (accessToken, refreshToken, profile, done) => {
+            try {
+                let user = await User.findOne({ githubId: profile.id });
+                if (!user) {
+                    user = new User({
+                        githubId: profile.id,
+                        fullName: profile.displayName || profile.username,
+                        email: profile.emails?.[0]?.value,
+                        profilePic: profile.photos?.[0]?.value,
+                    });
+                    await user.save();
+                }
+                return done(null, user);
+            } catch (error) {
+                return done(error, null);
+            }
+        }
+    )
+);
+
+// 序列化和反序列化用户
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
     try {
-        if (!fullName || !email || !password) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
-
-        if (password.length < 6) {
-            return res.status(400).json({ message: "Password must be at least 6 characters" });
-        }
-
-        const user = await User.findOne({ email });
-
-        if (user) return res.status(400).json({ message: "Email already exists" });
-
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        const newUser = new User({
-            fullName,
-            email,
-            password: hashedPassword,
-        });
-
-        if (newUser) {
-            // generate jwt token here
-            generateToken(newUser._id, res);
-            await newUser.save();
-
-            res.status(201).json({
-                _id: newUser._id,
-                fullName: newUser.fullName,
-                email: newUser.email,
-                profilePic: newUser.profilePic,
-            });
-        } else {
-            res.status(400).json({ message: "Invalid user data" });
-        }
+        const user = await User.findById(id);
+        done(null, user);
     } catch (error) {
-        console.log("Error in signup controller", error.message);
-        res.status(500).json({ message: "Internal Server Error" });
+        done(error, null);
     }
-};
+});
 
-export const login = async (req, res) => {
-    const { email, password } = req.body;
-    try {
-        const user = await User.findOne({ email });
+// 发起 GitHub 认证
+export const githubLogin = passport.authenticate("github", { scope: ["user:email"] });
 
+// GitHub 回调路由
+export const githubCallback = (req, res, next) => {
+    passport.authenticate("github", { failureRedirect: "/login" }, (err, user, info) => {
+        if (err) {
+            console.log("Authentication error:", err);
+            return res.status(500).json({ message: "Authentication failed" });
+        }
         if (!user) {
-            return res.status(400).json({ message: "Invalid credentials" });
+            console.log("No user found:", info);
+            return res.redirect("/login");
         }
-
-        const isPasswordCorrect = await bcrypt.compare(password, user.password);
-        if (!isPasswordCorrect) {
-            return res.status(400).json({ message: "Invalid credentials" });
+        try {
+            console.log("GitHub callback received, user:", user);
+            generateToken(user._id, res);
+            console.log("Redirecting to frontend:", "http://localhost:5173/auth/callback");
+            res.redirect("http://localhost:5173/auth/callback");
+        } catch (error) {
+            console.log("Error in github callback:", error.message);
+            res.status(500).json({ message: "Internal Server Error" });
         }
+    })(req, res, next);
+};
 
-        generateToken(user._id, res);
-
+// 获取当前用户信息
+export const getCurrentUser = (req, res) => {
+    try {
+        if (!req.user) {
+            return res.status(401).json({ message: "Not authenticated" });
+        }
         res.status(200).json({
-            _id: user._id,
-            fullName: user.fullName,
-            email: user.email,
-            profilePic: user.profilePic,
+            _id: req.user._id,
+            fullName: req.user.fullName,
+            email: req.user.email,
+            profilePic: req.user.profilePic
         });
     } catch (error) {
-        console.log("Error in login controller", error.message);
+        console.log("Error in getCurrentUser:", error.message);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
 
-export const logout = (req, res) => {
-    try {
-        res.cookie("jwt", "", { maxAge: 0 });
-        res.status(200).json({ message: "Logged out successfully" });
-    } catch (error) {
-        console.log("Error in logout controller", error.message);
-        res.status(500).json({ message: "Internal Server Error" });
-    }
-};
-
+// 更新用户资料
 export const updateProfile = async (req, res) => {
     try {
-        const { profilePic } = req.body;
-        const userId = req.user._id;
-
-        if (!profilePic) {
-            return res.status(400).json({ message: "Profile pic is required" });
+        if (!req.user) {
+            return res.status(401).json({ message: "Not authenticated" });
         }
 
-        const uploadResponse = await cloudinary.uploader.upload(profilePic);
+        const { fullName } = req.body;
+        const userId = req.user._id;
+
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            { profilePic: uploadResponse.secure_url },
+            { fullName },
             { new: true }
         );
 
-        res.status(200).json(updatedUser);
+        res.status(200).json({
+            _id: updatedUser._id,
+            fullName: updatedUser.fullName,
+            email: updatedUser.email,
+            profilePic: updatedUser.profilePic
+        });
     } catch (error) {
-        console.log("error in update profile:", error);
+        console.log("Error in update profile:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };
 
+// 登出
+// src/controllers/auth.controller.js
+export const logout = (req, res) => {
+    try {
+        res.cookie("jwt", "", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV !== "development",
+            sameSite: "strict",
+            maxAge: 0,
+        });
+        console.log("User logged out, JWT cookie cleared");
+        res.status(200).json({ message: "Logged out successfully" });
+    } catch (error) {
+        console.log("Error in logout controller:", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+// 检查认证状态
 export const checkAuth = (req, res) => {
     try {
-        res.status(200).json(req.user);
+        if (!req.user) {
+            return res.status(401).json({ message: "Not authenticated" });
+        }
+        res.status(200).json({
+            _id: req.user._id,
+            fullName: req.user.fullName,
+            email: req.user.email,
+            profilePic: req.user.profilePic
+        });
     } catch (error) {
-        console.log("Error in checkAuth controller", error.message);
+        console.log("Error in checkAuth:", error.message);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
