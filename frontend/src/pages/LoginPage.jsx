@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import AuthImagePattern from "../components/AuthImagePattern";
 import { Link, useNavigate } from "react-router-dom";
-import { Loader2, Github } from "lucide-react";
+import { Loader2, Github, MessageSquare } from "lucide-react";
 
 const LoginPage = () => {
     const { isLoggingIn, loginWithGithub } = useAuthStore(); // 假设添加了新的 GitHub 登录方法
@@ -25,7 +25,12 @@ const LoginPage = () => {
                                 className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20
               transition-colors"
                             >
-                                <Github className="w-6 h-6 text-primary" /> {/* 改为 GitHub 图标 */}
+                                <div
+                                    className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center
+             justify-center animate-bounce"
+                                >
+                                    <MessageSquare className="w-8 h-8 text-primary " />
+                                </div>
                             </div>
                             <h1 className="text-2xl font-bold mt-2">Welcome Back</h1>
                             <p className="text-base-content/60">Sign in with your GitHub account</p>
