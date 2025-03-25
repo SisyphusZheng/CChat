@@ -8,11 +8,9 @@ dotenv.config(); // 加载环境变量
 const app = express();
 const server = http.createServer(app);
 
-const allowedOrigins = process.env.FRONTEND_URL;
-
 const io = new Server(server, {
     cors: {
-        origin: allowedOrigins,
+        origin: process.env.FRONTEND_URL,
         methods: ["GET", "POST"],
         credentials: true,
     },

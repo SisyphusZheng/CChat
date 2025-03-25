@@ -12,16 +12,12 @@ dotenv.config();
 
 const PORT = process.env.PORT;
 
-const allowedOrigins = process.env.NODE_ENV === "development"
-  ? "http://localhost:5173"
-  : "https://cchat.chat";
-
 app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize()); // 初始化 Passport
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   })
 );
