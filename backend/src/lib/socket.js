@@ -8,9 +8,7 @@ dotenv.config(); // 加载环境变量
 const app = express();
 const server = http.createServer(app);
 
-const allowedOrigins = process.env.NODE_ENV === "development"
-    ? "http://localhost:5173"
-    : "https://cchat.chat";
+const allowedOrigins = process.env.FRONTEND_URL;
 
 const io = new Server(server, {
     cors: {

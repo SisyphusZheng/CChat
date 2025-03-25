@@ -1,5 +1,4 @@
 import { MessageSquare } from "lucide-react";
-import { PRODUCT_NAME } from '../constants/texts.js';
 
 const NoChatSelected = () => {
     return (
@@ -18,7 +17,7 @@ const NoChatSelected = () => {
                 </div>
 
                 {/* Welcome Text */}
-                <h2 className="text-2xl font-bold">{PRODUCT_NAME}</h2>
+                <h2 className="text-2xl font-bold">{import.meta.env.VITE_PRODUCT_NAME}</h2>
                 <p className="text-base-content/60">
                     Select a conversation from the sidebar to start chatting
                 </p>
