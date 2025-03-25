@@ -1,29 +1,34 @@
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
+import dotenv from "dotenv";
+
+dotenv.config(); // 加载环境变量
 
 const app = express();
 const server = http.createServer(app);
 
+const allowedOrigins = process.env.NODE_ENV === "development"
+    ? "http://localhost:5173"
+    : "https://cchat.chat";
+
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173", // 单域名不需要数组
-        methods: ["GET", "POST"], // 支持的 HTTP 方法
-        credentials: true, // 允许凭证（如 cookie）
+        origin: allowedOrigins,
+        methods: ["GET", "POST"],
+        credentials: true,
     },
 });
 
-export function getReceiverSocketId(userId) {
-    return userSocketMap[userId];
-}
-
-const userSocketMap = {}; // {userId: socketId}
+const userSocketMap = {};
 
 io.on("connection", (socket) => {
     console.log("A user connected", socket.id);
 
     const userId = socket.handshake.query.userId;
-    if (userId) userSocketMap[userId] = socket.id;
+    if (userId && userId !== "undefined") {
+        userSocketMap[userId] = socket.id;
+    }
 
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
@@ -33,5 +38,9 @@ io.on("connection", (socket) => {
         io.emit("getOnlineUsers", Object.keys(userSocketMap));
     });
 });
+
+export function getReceiverSocketId(userId) {
+    return userSocketMap[userId];
+}
 
 export { io, app, server };

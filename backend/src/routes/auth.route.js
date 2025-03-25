@@ -13,7 +13,7 @@ const router = express.Router();
 
 // GitHub 认证路由
 router.get("/github", githubLogin);
-router.get("/github/callback", githubCallback);
+router.get("/callback", githubCallback);
 
 // 获取当前用户信息
 router.get("/me", protectRoute, getCurrentUser);

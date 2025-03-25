@@ -3,7 +3,7 @@ import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 
-const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "/";
+const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "https://cchat.chat";
 
 export const useAuthStore = create((set, get) => ({
     authUser: null,
@@ -29,11 +29,12 @@ export const useAuthStore = create((set, get) => ({
     loginWithGithub: () => {
         set({ isLoggingIn: true });
         try {
+            if (!BASE_URL) throw new Error("BASE_URL is undefined");
             const url = new URL("/api/auth/github", BASE_URL).href;
             console.log("Redirecting to:", url);
             window.location.href = url;
         } catch (error) {
-            console.error("Error in loginWithGithub:", error);
+            console.error("Error in loginWithGithub:", error.message);
             toast.error("Failed to initiate GitHub login");
             set({ isLoggingIn: false });
         }
