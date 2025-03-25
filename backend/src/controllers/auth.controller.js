@@ -5,13 +5,13 @@ import { generateToken } from "../lib/utils.js";
 import dotenv from "dotenv";
 
 dotenv.config();
-// GitHub Strategy 配置
+// GitHub Strategy 
 passport.use(
     new GitHubStrategy(
         {
             clientID: process.env.GITHUB_CLIENT_ID,
             clientSecret: process.env.GITHUB_CLIENT_SECRET,
-            callbackURL: "http://localhost:5001/api/auth/github/callback",
+            callbackURL: process.env.GITHUB_CALLBACK_URL,
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
@@ -64,8 +64,8 @@ export const githubCallback = (req, res, next) => {
         try {
             console.log("GitHub callback received, user:", user);
             generateToken(user._id, res);
-            console.log("Redirecting to frontend:", "http://localhost:5173/auth/callback");
-            res.redirect("http://localhost:5173/auth/callback");
+
+            res.redirect(process.env.GITHUB_CALLBACK_URL);
         } catch (error) {
             console.log("Error in github callback:", error.message);
             res.status(500).json({ message: "Internal Server Error" });

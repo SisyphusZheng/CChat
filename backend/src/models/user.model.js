@@ -7,11 +7,6 @@ const userSchema = new mongoose.Schema(
             unique: true,
             sparse: true // 允许 null 值但保持唯一性
         },
-        email: {
-            type: String,
-            unique: true,
-            sparse: true // 允许 null 值但保持唯一性
-        },
         fullName: {
             type: String,
             required: true,
