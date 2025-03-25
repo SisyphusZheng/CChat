@@ -5,6 +5,7 @@ import { generateToken } from "../lib/utils.js";
 import dotenv from "dotenv";
 
 dotenv.config();
+
 // GitHub Strategy 
 passport.use(
     new GitHubStrategy(
@@ -59,12 +60,12 @@ export const githubCallback = (req, res, next) => {
         }
         if (!user) {
             console.log("No user found:", info);
-            return res.redirect("/login");
+            return res.redirect("http://localhost:5173/login"); // 重定向到前端登录页
         }
         try {
             console.log("GitHub callback received, user:", user);
-            generateToken(user._id, res);
-            res.redirect(process.env.GITHUB_CALLBACK_URL);
+            generateToken(user._id, res); // 设置 JWT cookie
+            res.redirect("http://localhost:5173/"); // 重定向到前端首页
         } catch (error) {
             console.log("Error in github callback:", error.message);
             res.status(500).json({ message: "Internal Server Error" });
@@ -119,7 +120,6 @@ export const updateProfile = async (req, res) => {
 };
 
 // 登出
-// src/controllers/auth.controller.js
 export const logout = (req, res) => {
     try {
         res.cookie("jwt", "", {

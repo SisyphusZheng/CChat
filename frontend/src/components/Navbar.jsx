@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import { useThemeStore } from "../store/useThemeStore"; // 新增主题store引入
-import { LogOut, MessageSquare, Settings, User, Moon, Sun } from "lucide-react";
-
+import { LogOut, MessageSquare, Settings, User, Moon, Sun, Github } from "lucide-react";
 const Navbar = () => {
+    // 在 Navbar 组件顶部添加：
+    console.log('[Debug] GitHub URL:', import.meta.env.VITE_GITHUB_DOCS_URL);
     const { logout, authUser } = useAuthStore();
-    const { theme, setTheme } = useThemeStore(); // 获取主题状态
+    const { theme, setTheme } = useThemeStore();
 
     // 主题切换逻辑
     const toggleTheme = () => {
@@ -32,6 +33,7 @@ const Navbar = () => {
                         <div className="flex items-center gap-1 mr-4">
                             <button
                                 onClick={toggleTheme}
+                                alt="change theme"
                                 className="btn btn-ghost btn-sm gap-2 hover:bg-base-200/50"
                             >
                                 {theme === 'dark' ? (
@@ -40,16 +42,16 @@ const Navbar = () => {
                                     <Moon className="w-5 h-5" />
                                 )}
                             </button>
-                            <div
-                                onClick={toggleTheme}
-                                className="cursor-pointer"
-                            >
-                                <input
-                                    type="checkbox"
-                                    className="toggle toggle-sm toggle-primary"
-                                    checked={theme === 'dark'}
-                                    onChange={() => { }}
-                                />
+                            <div className="flex items-center gap-1 mr-4">
+                                <a
+                                    href={import.meta.env.VITE_GITHUB_DOCS_URL}
+                                    target="_blank"
+                                    alt="GitHub Docs"
+                                    rel="noopener noreferrer"
+                                    className="btn btn-ghost btn-sm gap-2 hover:bg-base-200/50"
+                                >
+                                    <Github className="w-5 h-5" />
+                                </a>
                             </div>
                         </div>
 
