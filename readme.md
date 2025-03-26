@@ -1,6 +1,6 @@
 # CChat - Real-time Chat Application
 
-[中文](/readme_CN.md)
+[中文](readme_CN.md)
 
 <a name="English"></a>
 
@@ -106,4 +106,5 @@ plz view nginx.conf file to see how to deploy this project on nginx server and d
 ### 📸 Screenshots
 
 ![Chat Interface](assets/showcase1.png)
+
 ![Chat Interface](assets/showcase2.png)
