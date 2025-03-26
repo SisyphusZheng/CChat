@@ -60,12 +60,12 @@ export const githubCallback = (req, res, next) => {
         }
         if (!user) {
             console.log("No user found:", info);
-            return res.redirect("http://localhost:5173/login"); // 重定向到前端登录页
+            return res.redirect(`${process.env.FRONTEND_URL}/login`);
         }
         try {
             console.log("GitHub callback received, user:", user);
-            generateToken(user._id, res); // 设置 JWT cookie
-            res.redirect("http://localhost:5173/"); // 重定向到前端首页
+            generateToken(user._id, res);
+            res.redirect(`${process.env.FRONTEND_URL}/`);
         } catch (error) {
             console.log("Error in github callback:", error.message);
             res.status(500).json({ message: "Internal Server Error" });
@@ -124,8 +124,8 @@ export const logout = (req, res) => {
     try {
         res.cookie("jwt", "", {
             httpOnly: true,
-            secure: process.env.NODE_ENV !== "development",
-            sameSite: "strict",
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
             maxAge: 0,
         });
         console.log("User logged out, JWT cookie cleared");
