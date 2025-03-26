@@ -2,10 +2,6 @@
 
 [中文](readme_CN.md)
 
-<a name="English"></a>
-
-## 🌍 English Version
-
 ### 🚀 Introduction
 
 CChat is a modern real-time chat application built with the MERN stack (MongoDB, Express, React, Node.js), featuring:
