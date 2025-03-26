@@ -66,7 +66,9 @@ export const useAuthStore = create((set, get) => ({
         const { authUser } = get();
         if (!authUser || get().socket?.connected) return;
 
-        const socket = io(import.meta.env.VITE_SOCKET_BASE_URL, {
+        const socketUrl = import.meta.env.VITE_SOCKET_BASE_URL;
+
+        const socket = io(socketUrl.replace(/^http:\/\//, 'wss://'), {
             query: {
                 userId: authUser._id,
             },
@@ -81,6 +83,7 @@ export const useAuthStore = create((set, get) => ({
             set({ onlineUsers: userIds });
         });
     },
+
 
     disconnectSocket: () => {
         if (get().socket?.connected) get().socket.disconnect();
