@@ -3,8 +3,6 @@ import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 
-const SOCKET_BASE_URL = import.meta.env.VITE_SOCKET_BASE_URL;
-
 export const useAuthStore = create((set, get) => ({
     authUser: null,
     isLoggingIn: false,
@@ -29,7 +27,7 @@ export const useAuthStore = create((set, get) => ({
     loginWithGithub: () => {
         set({ isLoggingIn: true });
         try {
-            const url = new URL("/api/auth/github", SOCKET_BASE_URL).href;
+            const url = new URL("/api/auth/github", import.meta.env.VITE_SOCKET_BASE_URL).href;
             console.log("Redirecting to:", url);
             window.location.href = url;
         } catch (error) {
@@ -68,12 +66,12 @@ export const useAuthStore = create((set, get) => ({
         const { authUser } = get();
         if (!authUser || get().socket?.connected) return;
 
-        const socket = io(SOCKET_BASE_URL, {
+        const socket = io(import.meta.env.VITE_SOCKET_BASE_URL, {
             query: {
                 userId: authUser._id,
             },
             withCredentials: true,
-            transports: ['websocket']
+            transports: ['websocket', 'polling']
         });
         socket.connect();
 
