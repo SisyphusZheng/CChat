@@ -27,7 +27,7 @@ export const useAuthStore = create((set, get) => ({
     loginWithGithub: () => {
         set({ isLoggingIn: true });
         try {
-            const url = new URL("/api/auth/github", import.meta.env.VITE_SOCKET_BASE_URL).href;
+            const url = new URL("/api/auth/github", import.meta.env.VITE_API_BASE_URL).href;
             console.log("Redirecting to:", url);
             window.location.href = url;
         } catch (error) {
